@@ -5,12 +5,9 @@ import java.util.List;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.BodyDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -23,12 +20,12 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import static com.github.javaparser.ast.Modifier.publicModifier;
 import static com.github.javaparser.ast.NodeList.nodeList;
 
-public class Prova {
+public class Example {
 
     ExampleJShell exampleJShell = new ExampleJShell();
 
     public static void main(String[] args) {
-        new Prova().run();
+        new Example().run();
     }
 
     private void run() {
