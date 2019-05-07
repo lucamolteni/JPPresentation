@@ -1,15 +1,15 @@
 package org.drools.jppresentation;
 
-import java.io.InputStream;
-import java.util.List;
+import java.io.IOException;
+import java.nio.charset.Charset;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -24,93 +24,45 @@ public class Example {
 
     ExampleJShell exampleJShell = new ExampleJShell();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        System.out.println();
         new Example().run();
+        System.out.println();
     }
 
-    private void run() {
-//        exampleJShell.eval(generateGreetingUsingJP(true));
-//        exampleJShell.eval("greeting(\"Luca\")");
-//
-//        exampleJShell.eval(generateSumMethodJP("double"));
-//        exampleJShell.eval("sum(new double[] {1, 2, 3})");
+    private void run() throws Exception {
 
-
-        exampleJShell.eval(templateFoo("Luca"));
-        exampleJShell.eval("new Foo().bar()");
-
+        exampleJShell.eval(generateSumMethodJP("long"));
+        exampleJShell.eval("new Foo().sum(new long[] { 2,3, 4})");
     }
 
-    public String templateFoo(String name) {
-        InputStream resourceAsStream = this.getClass().getResourceAsStream("/Foo.java");
-        CompilationUnit parse = StaticJavaParser.parse(resourceAsStream);
-
-        List<StringLiteralExpr> nodes = parse.findAll(StringLiteralExpr.class, sl -> sl.toString().equals("\"_____whatever\""));
-
-        nodes.forEach(n -> n.replace(new StringLiteralExpr(name)));
-
-        return parse.toString();
+    public int sum(int[] numbers) {
+        int acc = 0;
+        for (int i : numbers) {
+            acc += i;
+        }
+        return acc;
     }
 
-    public String generateSumMethodJP(String numType) {
-        String template = "   public NUM_TYPE sum(NUM_TYPE[] ints) {\n" +
-                "        NUM_TYPE accumulator = 0;\n" +
-                "        for(NUM_TYPE i : ints) {\n" +
-                "            accumulator += i;\n" +
+    public String generateSumMethod(String numType) {
+        return "public " + numType + " sum(" + numType + "[] numbers) {\n" +
+                "        " + numType + " acc = 0;\n" +
+                "        for(" + numType + " i : numbers) {\n" +
+                "            acc += i;\n" +
                 "        }\n" +
-                "        return accumulator;\n" +
-                "    }";
+                "        return acc;\n" +
+                "    }\n";
+    }
 
-        BodyDeclaration<?> bodyDeclaration = StaticJavaParser.parseBodyDeclaration(template);
+    public String generateSumMethodJP(String numType) throws IOException {
 
-        bodyDeclaration.findAll(ClassOrInterfaceType.class, t -> t.getName().asString().equals("NUM_TYPE"))
+        CompilationUnit bodyDeclaration =
+                StaticJavaParser.parseResource(this.getClass().getClassLoader(), "Foo.java", Charset.defaultCharset());
+
+        bodyDeclaration.findAll(ClassOrInterfaceType.class)
                 .forEach(t -> t.replace(new ClassOrInterfaceType(null, numType)));
 
         return bodyDeclaration.toString();
 
-    }
-
-    public String generateGreeting(boolean formal) {
-        return "\n" +
-                "    public String greeting(String name) {\n" +
-                "        return " + (formal ? "\"Good morning \"" : "\"Hello \"") + " + name;\n" +
-                "    }";
-    }
-
-    public String greeting(String name) {
-        return "Hello " + name;
-    }
-
-    public int sum(int[] ints) {
-        int accumulator = 0;
-        for(int i : ints) {
-            accumulator += i;
-        }
-        return accumulator;
-    }
-
-    public String generateSumMethod(String numType) {
-        return "    public "+numType+" sum("+numType+"[] ints) {\n" +
-                "        "+numType+" accumulator = 0;\n" +
-                "        for("+numType+" i : ints) {\n" +
-                "            accumulator += i;\n" +
-                "        }\n" +
-                "        return accumulator;\n" +
-                "    }";
-    }
-
-    public String generateGreetingUsingJP(boolean formal) {
-
-        ClassOrInterfaceType returnedType = new ClassOrInterfaceType(null, "String");
-        MethodDeclaration greeting = new MethodDeclaration(nodeList(publicModifier()), returnedType, "greeting")
-                .setParameters(nodeList(new Parameter(returnedType, "name")));
-
-        String hello_ = formal ? "Good morning " : "Hello ";
-        Expression expr = new BinaryExpr(new StringLiteralExpr(hello_), new NameExpr("name"), BinaryExpr.Operator.PLUS);
-        Statement statement = new ReturnStmt(expr);
-
-        greeting.setBody(new BlockStmt(nodeList(statement)));
-
-        return greeting.toString();
     }
 }
