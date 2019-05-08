@@ -32,37 +32,6 @@ public class Example {
 
     private void run() throws Exception {
 
-        exampleJShell.eval(generateSumMethodJP("long"));
-        exampleJShell.eval("new Foo().sum(new long[] { 2,3, 4})");
     }
 
-    public int sum(int[] numbers) {
-        int acc = 0;
-        for (int i : numbers) {
-            acc += i;
-        }
-        return acc;
-    }
-
-    public String generateSumMethod(String numType) {
-        return "public " + numType + " sum(" + numType + "[] numbers) {\n" +
-                "        " + numType + " acc = 0;\n" +
-                "        for(" + numType + " i : numbers) {\n" +
-                "            acc += i;\n" +
-                "        }\n" +
-                "        return acc;\n" +
-                "    }\n";
-    }
-
-    public String generateSumMethodJP(String numType) throws IOException {
-
-        CompilationUnit bodyDeclaration =
-                StaticJavaParser.parseResource(this.getClass().getClassLoader(), "Foo.java", Charset.defaultCharset());
-
-        bodyDeclaration.findAll(ClassOrInterfaceType.class)
-                .forEach(t -> t.replace(new ClassOrInterfaceType(null, numType)));
-
-        return bodyDeclaration.toString();
-
-    }
 }
